@@ -1,7 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/colmm/Projects/Hmrc/888-techTest/src/main/scala/services/CommandLineService.scala:83:57: illegal start of simple expression[0m
-[0m[[0m[31merror[0m] [0m[0m        return Market(marketName, /* other attributes */, selections.reverse)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/colmm/Projects/Hmrc/888-techTest/src/main/scala/services/CommandLineService.scala:84:7: ')' expected but '}' found.[0m
-[0m[[0m[31merror[0m] [0m[0m      }[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
