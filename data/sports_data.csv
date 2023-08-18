@@ -1,0 +1,5 @@
+Sport Name,Display Name,Slug,Order,Event Name,Event Type,Event Status,Event Slug,Market Name,Market Display Name,Market Order,Market Schema,Num Columns,Selection Name,Selection Price,Selection Active,Selection Outcome
+Soccer,Soccer,soccer,1,Football Match,preplay,Preplay,football-match,Match Winner,Match Winner,1,123,2,Team A,150,true,Win
+Soccer,Soccer,soccer,1,Football Match,preplay,Preplay,football-match,Match Winner,Match Winner,1,123,2,Team B,200,true,Lose
+Tennis,Tennis,tennis,2,Tennis Match,preplay,Preplay,tennis-match,Over/Under,Over/Under,2,124,2,Team A,150,true,Win
+Tennis,Tennis,tennis,2,Tennis Match,preplay,Preplay,tennis-match,Over/Under,Over/Under,2,124,2,Team B,200,true,Lose

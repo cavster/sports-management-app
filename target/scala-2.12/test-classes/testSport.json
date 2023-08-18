@@ -1,0 +1,41 @@
+{
+  "name": "Football",
+  "displayName": "Soccer",
+  "slug": "football",
+  "order": 1,
+  "events": [
+    {
+      "name": "Match 1",
+      "eventType": "preplay",
+      "status": "Preplay",
+      "slug": "match-1",
+      "markets": [
+        {
+          "name": "Market 1",
+          "displayName": "Match Result",
+          "order": 1,
+          "schema": 1,
+          "columns": 2,
+          "selections": [
+            {
+              "name": "Team A",
+              "price": {
+                "valueInPennies": 100
+              },
+              "active": true,
+              "outcome": "Win"
+            },
+            {
+              "name": "Team B",
+              "price": {
+                "valueInPennies": 150
+              },
+              "active": true,
+              "outcome": "Lose"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
