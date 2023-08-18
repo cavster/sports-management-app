@@ -1,0 +1,25 @@
+# Scala build artifacts
+target/
+
+# IntelliJ IDEA
+.idea/
+
+# Scala SBT specific
+project/
+project/target/
+.bsp/
+
+# Eclipse
+.classpath
+.project
+.cache
+.settings/
+
+# Metals
+.metals/
+
+# Mac-specific
+.DS_Store
+
+# Log files
+*.log
