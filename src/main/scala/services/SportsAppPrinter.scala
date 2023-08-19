@@ -15,12 +15,12 @@ object SportsAppPrinter {
 
   def printEvent(event: Event): String = {
     val markets = event.markets.map(printMarket).mkString("\n\t")
-    s"Event: ${event.name.value}, EventType: ${event.eventType}, Status: ${event.status}, Slug: ${event.slug.value}\n\tMarkets:\n\t$markets"
+   s"Event: ${event.name.value}, EventType: ${event.eventType}, Status: ${event.status}, Slug: ${event.slug.value}, Active: ${event.active}\n\tMarkets:\n\t$markets"
   }
 
-  def printSport(sport: Sport): String = {
+  def printSport(sport: Sport): Unit = {
     val events = sport.events.map(printEvent).mkString("\n")
-    s"Sport: ${sport.name.value}, DisplayName: ${sport.displayName.value}, Slug: ${sport.slug.value}, Order: ${sport.order.value}\nEvents:\n$events"
+    println(s"Sport: ${sport.name.value}, DisplayName: ${sport.displayName.value}, Slug: ${sport.slug.value}, Order: ${sport.order.value}, Active: ${sport.active}\nEvents:\n$events")
   }
 
 }

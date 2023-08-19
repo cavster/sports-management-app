@@ -9,16 +9,7 @@ println("Starting SportsManagement App")
   val searchFilterService = new SearchFilterService
   val commandLineService = new CommandLineService(persistenceService,searchFilterService)
 
-  //test first
-  //Create sport
-  //Create event
-  //Create market
-  //Create Selection
-  //persistance
-  //search
-  //update just set to active inactive
-  //delete
-  //search
+
   while (true) {
     println("Select an action:")
     println("1. Add Sport")
@@ -28,7 +19,9 @@ println("Starting SportsManagement App")
     println("5. Search Events by name")
     println("6. Search Markets by name")
     println("7. Search Selections by name")
-    println("9. Exit")
+    println("8. Update Sport by name")
+    println("9. Delete Sports by name")
+    println("10. Exit")
     val choice = scala.io.StdIn.readLine()
 
     choice match {
@@ -39,7 +32,9 @@ println("Starting SportsManagement App")
       case "5" => commandLineService.searchEventByName()
       case "6" => commandLineService.searchMarketByName()
       case "7" => commandLineService.searchSelectionByName()
-      case "9" =>
+      case "8" => commandLineService.updateSportByName()
+      case "9" => commandLineService.deleteSportByName()
+      case "10" =>
         persistenceService.safelySaveSports(commandLineService.allSports.toList)
         System.exit(0)
       case _ => println("Invalid choice")

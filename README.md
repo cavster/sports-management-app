@@ -27,5 +27,9 @@ sbt run
 
 Follow the on-screen prompts to interact with the application. You can add sports, events, markets, and selections, view all sports, and fill with sample data.
 
+###  Using Docker
+docker build -t sports-management-app .
+docker run -it sports-management-app
+
 ###  File Persistence
-The application uses CSV files for data persistence. Data is stored in the /data directory. The application reads and writes data to the sports_data.csv file.
+The application uses CSV files for data persistence. Data is stored in the /data directory. The application reads and writes data to the sports_data.json file.

@@ -6,9 +6,9 @@ import services.SampleData.createSampleData
 
 class CommandLineService(persistenceService:PersistenceService,
                          searchFilterService:SearchFilterService) {
-  private val sportsFromFile =  persistenceService.loadSportsFromFile()
+  private val sportsFromFile = persistenceService.loadSportsFromFile()
 
-  var allSports =  scala.collection.mutable.ListBuffer.empty[Sport] ++ sportsFromFile
+  var allSports = scala.collection.mutable.ListBuffer.empty[Sport] ++ sportsFromFile
 
 
   def addSport(): Unit = {
@@ -22,7 +22,7 @@ class CommandLineService(persistenceService:PersistenceService,
     val sportSlug = Slug(scala.io.StdIn.readLine())
 
     println("Enter sport order:")
-    val sportOrder = Order(    safelyReadInt("Enter sport order:"))
+    val sportOrder = Order(safelyReadInt("Enter sport order:"))
 
     val sport = Sport(sportName, sportDisplayName, sportSlug, sportOrder)
     allSports += sport
@@ -77,19 +77,19 @@ class CommandLineService(persistenceService:PersistenceService,
     val marketDisplayName = DisplayName(scala.io.StdIn.readLine())
 
 
-    val marketOrder = Order(    safelyReadInt("Enter market order:"))
+    val marketOrder = Order(safelyReadInt("Enter market order:"))
 
 
-    val marketSchema = Schema(  safelyReadInt("Enter market schema:"))
+    val marketSchema = Schema(safelyReadInt("Enter market schema:"))
 
 
-    val numColumns = Columns(  safelyReadInt("Enter number of columns:"))
+    val numColumns = Columns(safelyReadInt("Enter number of columns:"))
 
     var selections: List[Selection] = Nil
     while (true) {
       val selection = addSelection()
       selections = selection :: selections
-       println(selection)
+      println(selection)
       println("Add another selection? (yes/no):")
       val addAnotherSelection = scala.io.StdIn.readLine().toLowerCase
       if (addAnotherSelection != "yes") {
@@ -105,7 +105,7 @@ class CommandLineService(persistenceService:PersistenceService,
     println("Enter selection name:")
     val selectionName = Name(scala.io.StdIn.readLine())
 
-    val selectionPrice = Price(  safelyReadInt("Enter selection price (in pennies):"))
+    val selectionPrice = Price(safelyReadInt("Enter selection price (in pennies):"))
 
     println("Is the selection active? (true/false):")
     val selectionActive = scala.io.StdIn.readBoolean()
@@ -115,6 +115,7 @@ class CommandLineService(persistenceService:PersistenceService,
 
     Selection(selectionName, selectionPrice, selectionActive, selectionOutcome)
   }
+
   def viewAllSports(): Unit = {
     if (allSports.isEmpty) {
       println("No sports available.")
@@ -122,19 +123,12 @@ class CommandLineService(persistenceService:PersistenceService,
       println("All Sports:")
       allSports.foreach { sport =>
 
-        println(s"Sport : ${SportsAppPrinter.printSport(sport)}")
-        sport.events.foreach { event =>
-          println(s"  Event : ${SportsAppPrinter.printEvent(event)}")
-          event.markets.foreach { market =>
-            println(s"    Market : ${SportsAppPrinter.printMarket(market)}")
-            market.selections.foreach { selection =>
-              println(s"      Selection : ${{SportsAppPrinter.printSelection(selection)}}")
-            }
-          }
-        }
+        SportsAppPrinter.printSport(sport)
+
       }
     }
   }
+
   def safelyReadInt(prompt: String): Int = {
     try {
       println(prompt)
@@ -145,6 +139,7 @@ class CommandLineService(persistenceService:PersistenceService,
         safelyReadInt(prompt)
     }
   }
+
   def safelyReadEnum[E <: Enumeration](enum: E, prompt: String): E#Value = {
     try {
       println(prompt)
@@ -156,34 +151,83 @@ class CommandLineService(persistenceService:PersistenceService,
         safelyReadEnum(enum, prompt)
     }
   }
+
   def searchSportByName() {
     println("Enter a regex pattern:")
     val patternString = scala.io.StdIn.readLine()
     val regex = patternString.r
-    searchFilterService.searchSportsByName(allSports.toList,regex)
+    searchFilterService.searchSportsByName(allSports.toList, regex)
   }
+
   def searchEventByName() {
     println("Enter a regex pattern:")
     val patternString = scala.io.StdIn.readLine()
     val regex = patternString.r
-   val allEvents = allSports.flatMap(_.events).toList
-    searchFilterService.searchEventsByName(allEvents,regex)
+    val allEvents = allSports.flatMap(_.events).toList
+    searchFilterService.searchEventsByName(allEvents, regex)
   }
+
   def searchMarketByName() {
     println("Enter a regex pattern:")
     val patternString = scala.io.StdIn.readLine()
     val regex = patternString.r
     val allMarkets: List[Market] = allSports.flatMap(_.events.flatMap(_.markets)).toList
-    searchFilterService.searchMarketsByName(allMarkets,regex)
+    searchFilterService.searchMarketsByName(allMarkets, regex)
   }
+
   def searchSelectionByName() {
     println("Enter a regex pattern:")
     val patternString = scala.io.StdIn.readLine()
     val regex = patternString.r
     val allMarkets: List[Market] = allSports.flatMap(_.events.flatMap(_.markets)).toList
     val allSections = allMarkets.flatMap(_.selections)
-    searchFilterService.searchSelectionsByName(allSections,regex)
+    searchFilterService.searchSelectionsByName(allSections, regex)
   }
+
+  def deleteSportByName(): Unit = {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+    val filteredSports = searchFilterService.filterByNameRegex(allSports.toList, regex, (sport: Sport) => sport.name.value)
+    filteredSports.foreach { sport =>
+      // Delete the sport from the main list
+      allSports -= sport
+    }
+  }
+
+  def updateSportByName(): Unit = {
+    println("Enter the current name of the sport you want to update:")
+    val currentName = Name(scala.io.StdIn.readLine())
+
+    // Find the sport in the list by its current name
+    val sportToUpdateOption: Option[Sport] = allSports.find(_.name == currentName)
+
+    sportToUpdateOption match {
+      case Some(sportToUpdate) =>
+        println(s"Updating Sport: ${sportToUpdate.name.value}")
+
+        // Get the new name from the user
+        println("Enter the new name:")
+        val newName = Name(scala.io.StdIn.readLine())
+
+        // Update the sport's name
+        val updatedSport = sportToUpdate.copy(name = newName)
+
+        // Update the allSports list
+        allSports = allSports.map {
+          case sport if sport == sportToUpdate => updatedSport
+          case otherSport => otherSport
+        }
+
+        println(s"Sport updated. New name: ${updatedSport.name.value}")
+
+      case None =>
+        println(s"No sport found with the name: $currentName")
+    }
+  }
+
+
+
 
 
   def fillWithSampleData () = allSports ++= createSampleData
