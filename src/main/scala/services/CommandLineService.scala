@@ -4,10 +4,11 @@ import model.entities.{Event, EventStatus, EventType, Market, Selection, Sport}
 import model.entities.ValueClasses.{Columns, DisplayName, Name, Order, Outcome, Price, Schema, Slug}
 import services.SampleData.createSampleData
 
-class CommandLineService(persistenceService:PersistenceService) {
-  val sportsFromFile =  persistenceService.loadSportsFromFile()
+class CommandLineService(persistenceService:PersistenceService,
+                         searchFilterService:SearchFilterService) {
+  private val sportsFromFile =  persistenceService.loadSportsFromFile()
 
-  var AllSports =  scala.collection.mutable.ListBuffer.empty[Sport] ++ sportsFromFile
+  var allSports =  scala.collection.mutable.ListBuffer.empty[Sport] ++ sportsFromFile
 
 
   def addSport(): Unit = {
@@ -24,7 +25,7 @@ class CommandLineService(persistenceService:PersistenceService) {
     val sportOrder = Order(    safelyReadInt("Enter sport order:"))
 
     val sport = Sport(sportName, sportDisplayName, sportSlug, sportOrder)
-    AllSports += sport
+    allSports += sport
 
     var events: List[Event] = Nil
     while (true) {
@@ -34,11 +35,11 @@ class CommandLineService(persistenceService:PersistenceService) {
       println("Add another event? (yes/no):")
       val addAnotherEvent = scala.io.StdIn.readLine().toLowerCase
       if (addAnotherEvent != "yes") {
-        AllSports += sport.copy(events = events)
+        allSports += sport.copy(events = events)
         return
       }
     }
-    println(AllSports)
+    println(allSports)
   }
 
 
@@ -64,7 +65,7 @@ class CommandLineService(persistenceService:PersistenceService) {
         return Event(eventName, eventType, eventStatus, eventSlug, markets.reverse)
       }
     }
-    println(AllSports)
+    println(allSports)
     Event(eventName, eventType, eventStatus, eventSlug, markets.reverse)
   }
 
@@ -95,7 +96,7 @@ class CommandLineService(persistenceService:PersistenceService) {
         return Market(marketName, marketDisplayName, marketOrder, marketSchema, numColumns, selections.reverse)
       }
     }
-    println(AllSports)
+    println(allSports)
     Market(marketName, marketDisplayName, marketOrder, marketSchema, numColumns, selections.reverse)
   }
 
@@ -115,11 +116,11 @@ class CommandLineService(persistenceService:PersistenceService) {
     Selection(selectionName, selectionPrice, selectionActive, selectionOutcome)
   }
   def viewAllSports(): Unit = {
-    if (AllSports.isEmpty) {
+    if (allSports.isEmpty) {
       println("No sports available.")
     } else {
       println("All Sports:")
-      AllSports.foreach { sport =>
+      allSports.foreach { sport =>
 
         println(s"Sport : ${SportsAppPrinter.printSport(sport)}")
         sport.events.foreach { event =>
@@ -155,7 +156,36 @@ class CommandLineService(persistenceService:PersistenceService) {
         safelyReadEnum(enum, prompt)
     }
   }
+  def searchSportByName() {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+    searchFilterService.searchSportsByName(allSports.toList,regex)
+  }
+  def searchEventByName() {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+   val allEvents = allSports.flatMap(_.events).toList
+    searchFilterService.searchEventsByName(allEvents,regex)
+  }
+  def searchMarketByName() {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+    val allMarkets: List[Market] = allSports.flatMap(_.events.flatMap(_.markets)).toList
+    searchFilterService.searchMarketsByName(allMarkets,regex)
+  }
+  def searchSelectionByName() {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+    val allMarkets: List[Market] = allSports.flatMap(_.events.flatMap(_.markets)).toList
+    val allSections = allMarkets.flatMap(_.selections)
+    searchFilterService.searchSelectionsByName(allSections,regex)
+  }
 
-  def fillWithSampleData () = AllSports ++= createSampleData
+
+  def fillWithSampleData () = allSports ++= createSampleData
 }
 

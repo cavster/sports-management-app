@@ -1,12 +1,13 @@
 import model.entities.{Event, EventStatus, EventType, Sport}
 import model.entities.ValueClasses.{DisplayName, Name, Order, Slug}
-import services.{CommandLineService, PersistenceService}
+import services.{CommandLineService, PersistenceService, SearchFilterService}
 
 object SportsManagement extends App{
 println("Starting SportsManagement App")
 
   val persistenceService = new PersistenceService
-  val commandLineService = new CommandLineService(persistenceService)
+  val searchFilterService = new SearchFilterService
+  val commandLineService = new CommandLineService(persistenceService,searchFilterService)
 
   //test first
   //Create sport
@@ -14,6 +15,7 @@ println("Starting SportsManagement App")
   //Create market
   //Create Selection
   //persistance
+  //search
   //update just set to active inactive
   //delete
   //search
@@ -22,6 +24,10 @@ println("Starting SportsManagement App")
     println("1. Add Sport")
     println("2. View All")
     println("3. Fill with sample data")
+    println("4. Search Sports by name")
+    println("5. Search Events by name")
+    println("6. Search Markets by name")
+    println("7. Search Selections by name")
     println("9. Exit")
     val choice = scala.io.StdIn.readLine()
 
@@ -29,8 +35,12 @@ println("Starting SportsManagement App")
       case "1" => commandLineService.addSport()
       case "2" => commandLineService.viewAllSports()
       case "3" => commandLineService.fillWithSampleData()
+      case "4" => commandLineService.searchSportByName()
+      case "5" => commandLineService.searchEventByName()
+      case "6" => commandLineService.searchMarketByName()
+      case "7" => commandLineService.searchSelectionByName()
       case "9" =>
-        persistenceService.safelySaveSports(commandLineService.AllSports.toList)
+        persistenceService.safelySaveSports(commandLineService.allSports.toList)
         System.exit(0)
       case _ => println("Invalid choice")
     }
@@ -38,7 +48,7 @@ println("Starting SportsManagement App")
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     override def run(): Unit = {
       println("Saving sports data on exit...")
-      persistenceService.safelySaveSports(commandLineService.AllSports.toList)
+      persistenceService.safelySaveSports(commandLineService.allSports.toList)
     }
   }))
 

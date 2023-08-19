@@ -1,0 +1,59 @@
+[ {
+  "name" : "Soccer",
+  "displayName" : "Soccer",
+  "slug" : "soccer",
+  "order" : 1,
+  "events" : [ {
+    "name" : "Football Match",
+    "eventType" : "preplay",
+    "status" : "Preplay",
+    "slug" : "football-match",
+    "markets" : [ {
+      "name" : "Match Winner",
+      "displayName" : "Match Winner",
+      "order" : 1,
+      "schema" : 123,
+      "columns" : 2,
+      "selections" : [ {
+        "name" : "Team A",
+        "price" : 150,
+        "active" : true,
+        "outcome" : "Win"
+      }, {
+        "name" : "Team B",
+        "price" : 200,
+        "active" : true,
+        "outcome" : "Lose"
+      } ]
+    } ]
+  } ]
+}, {
+  "name" : "Tennis",
+  "displayName" : "Tennis",
+  "slug" : "tennis",
+  "order" : 2,
+  "events" : [ {
+    "name" : "Tennis Match",
+    "eventType" : "preplay",
+    "status" : "Preplay",
+    "slug" : "tennis-match",
+    "markets" : [ {
+      "name" : "Over/Under",
+      "displayName" : "Over/Under",
+      "order" : 2,
+      "schema" : 124,
+      "columns" : 2,
+      "selections" : [ {
+        "name" : "Team A",
+        "price" : 150,
+        "active" : true,
+        "outcome" : "Win"
+      }, {
+        "name" : "Team B",
+        "price" : 200,
+        "active" : true,
+        "outcome" : "Lose"
+      } ]
+    } ]
+  } ]
+} ]
