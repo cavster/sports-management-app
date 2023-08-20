@@ -32,7 +32,8 @@ all sports, and fill with sample data.
 
 ### Using Docker
 
-docker build -t sports-management-app docker run -it sports-management-app
+docker build -t sports-management-app
+docker run -it sports-management-app
 
 ### File Persistence
 
