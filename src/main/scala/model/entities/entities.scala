@@ -2,13 +2,14 @@ package model.entities
 
 import model.entities.EventStatus.EventStatus
 import model.entities.EventType.EventType
-import model.entities.ValueClasses.{Columns, DisplayName, Name, Order, Outcome, Price, Schema, Slug}
+import model.entities.ValueClasses._
 import play.api.libs.json.{Json, Reads, Writes}
 
 object EventType extends Enumeration {
   type EventType = Value
   val preplay, inplay = Value
 }
+
 object EventStatus extends Enumeration {
   type EventStatus = Value
   val Preplay, Inplay, Ended = Value
@@ -42,6 +43,7 @@ case class Sport(name: Name, displayName: DisplayName, slug: Slug, order: Order,
 
   def addEvent(event: Event): Sport = copy(events = event :: events)
 }
+
 case class Event(name: Name, eventType: EventType, status: EventStatus, slug: Slug, markets: List[Market] = Nil) {
   val active: Boolean = markets.exists(_.active)
 }
@@ -56,6 +58,7 @@ object EnumUtils {
   def enumReads[E <: Enumeration](enum: E): Reads[E#Value] =
     Reads.enumNameReads(enum)
 }
+
 object MyJsonFormats {
   // Define implicit Reads for Selection, Market, Event, and Sport
 
@@ -64,9 +67,9 @@ object MyJsonFormats {
   implicit val slugReads: Reads[Slug] = Reads.of[String].map(Slug)
   implicit val orderReads: Reads[Order] = Reads.of[Int].map(Order)
   implicit val priceReads: Reads[Price] = Reads.of[Int].map(Price)
-  implicit val outcomeReads: Reads[Outcome] =Reads.of[String].map(Outcome)
-  implicit val columnReads: Reads[Columns] =Reads.of[Int].map(Columns)
-  implicit val schemaReads: Reads[Schema] =Reads.of[Int].map(Schema)
+  implicit val outcomeReads: Reads[Outcome] = Reads.of[String].map(Outcome)
+  implicit val columnReads: Reads[Columns] = Reads.of[Int].map(Columns)
+  implicit val schemaReads: Reads[Schema] = Reads.of[Int].map(Schema)
 
   implicit val eventTypeReads: Reads[EventType.Value] = EnumUtils.enumReads(EventType)
   implicit val eventStatusReads: Reads[EventStatus.Value] = EnumUtils.enumReads(EventStatus)
@@ -75,7 +78,7 @@ object MyJsonFormats {
   implicit val displayNameWrites: Writes[DisplayName] = Writes.of[String].contramap(_.value)
   implicit val slugWrites: Writes[Slug] = Writes.of[String].contramap(_.value)
   implicit val orderWrites: Writes[Order] = Writes.of[Int].contramap(_.value)
-  implicit val priceWrites: Writes[Price] =  Writes.of[Int].contramap(_.valueInPennies)
+  implicit val priceWrites: Writes[Price] = Writes.of[Int].contramap(_.valueInPennies)
   implicit val outcomeWrites: Writes[Outcome] = Writes.of[String].contramap(_.value)
   implicit val columnWrites: Writes[Columns] = Writes.of[Int].contramap(_.value)
   implicit val schemaWrites: Writes[Schema] = Writes.of[Int].contramap(_.value)

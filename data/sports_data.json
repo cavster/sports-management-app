@@ -9,13 +9,13 @@
     "status" : "Preplay",
     "slug" : "tennis-match",
     "markets" : [ {
-      "name" : "Over/Under",
+      "name" : "Over/Yonder",
       "displayName" : "Over/Under",
       "order" : 2,
       "schema" : 124,
       "columns" : 2,
       "selections" : [ {
-        "name" : "Team A",
+        "name" : "Team C",
         "price" : 150,
         "active" : true,
         "outcome" : "Win"

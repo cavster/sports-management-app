@@ -1,11 +1,14 @@
 package services
 
-import model.entities.{Event, EventStatus, EventType, Market, Selection, Sport}
-import model.entities.ValueClasses.{Columns, DisplayName, Name, Order, Outcome, Price, Schema, Slug}
+import model.entities.ValueClasses._
+import model.entities._
 import services.SampleData.createSampleData
+import services.SportsAppPrinter.printSport
 
-class CommandLineService(persistenceService:PersistenceService,
-                         searchFilterService:SearchFilterService) {
+import scala.collection.mutable.ListBuffer
+
+class CommandLineService(persistenceService: PersistenceService,
+                         searchFilterService: SearchFilterService) {
   private val sportsFromFile = persistenceService.loadSportsFromFile()
 
   var allSports = scala.collection.mutable.ListBuffer.empty[Sport] ++ sportsFromFile
@@ -190,10 +193,110 @@ class CommandLineService(persistenceService:PersistenceService,
     val regex = patternString.r
     val filteredSports = searchFilterService.filterByNameRegex(allSports.toList, regex, (sport: Sport) => sport.name.value)
     filteredSports.foreach { sport =>
-      // Delete the sport from the main list
       allSports -= sport
     }
   }
+  def deleteEventByName(): Unit = {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+
+    // Create a mutable list to collect the modified sports
+    var modifiedSports = List.empty[Sport]
+
+    allSports.foreach { sport =>
+      val filteredEvents = sport.events.filter(event => regex.pattern.matcher(event.name.value).matches())
+
+      if (filteredEvents.nonEmpty) {
+        println(s"Deleting events matching pattern '$patternString' in sport '${sport.name.value}':")
+        val updatedEvents = sport.events.filterNot(event => regex.pattern.matcher(event.name.value).matches())
+        val updatedSport = sport.copy(events = updatedEvents)
+        modifiedSports ::= updatedSport
+        println(s"${filteredEvents.size} events deleted.")
+      }
+    }
+
+    // Update the allSports list with the modified sports
+    allSports = modifiedSports.reverse.to[ListBuffer]
+  }
+  def deleteMarketByName(): Unit = {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+
+    // Create a mutable list to collect the modified events
+    var modifiedEvents = List.empty[Event]
+
+    allSports.foreach { sport =>
+      sport.events.foreach { event =>
+        val filteredMarkets = event.markets.filter(market => regex.pattern.matcher(market.name.value).matches())
+
+        if (filteredMarkets.nonEmpty) {
+          println(s"Deleting markets matching pattern '$patternString' in event '${event.name.value}' of sport '${sport.name.value}':")
+          val updatedMarkets = event.markets.filterNot(market => regex.pattern.matcher(market.name.value).matches())
+          val updatedEvent = event.copy(markets = updatedMarkets)
+          modifiedEvents ::= updatedEvent
+          println(s"${filteredMarkets.size} markets deleted.")
+        }
+      }
+    }
+
+    // Update the allSports list with the modified events
+    allSports = allSports.map { sport =>
+      sport.copy(events = sport.events.filterNot(event => modifiedEvents.exists(_.name == event.name)))
+    }
+  }
+  def deleteSelectionByName(): Unit = {
+    println("Enter a regex pattern:")
+    val patternString = scala.io.StdIn.readLine()
+    val regex = patternString.r
+
+    // Create a mutable list to collect the modified selections
+    var modifiedSelections = List.empty[Selection]
+
+    allSports.foreach { sport =>
+      sport.events.foreach { event =>
+        event.markets.foreach { market =>
+          val modifiedMarket = market.copy(
+            selections = market.selections.filterNot(selection => regex.pattern.matcher(selection.name.value).matches())
+          )
+
+          val modifiedEvent = event.copy(
+            markets = event.markets.map { m =>
+              if (m.name == market.name) modifiedMarket else m
+            }
+          )
+
+          val modifiedSport = sport.copy(
+            events = sport.events.map { e =>
+              if (e.name == event.name) modifiedEvent else e
+            }
+          )
+
+          modifiedSelections = modifiedSelections ++ market.selections.filter(selection => regex.pattern.matcher(selection.name.value).matches())
+          allSports = allSports.map { s =>
+            if (s.name == sport.name) modifiedSport else s
+          }
+
+          println(s"${modifiedSelections.size} selections deleted.")
+        }
+      }
+    }
+  }
+
+  def findSportsWithMinActiveEvents():Unit = {
+    println("Enter the minimum number of active events:")
+    val threshold = scala.io.StdIn.readInt()
+
+   val sportsWithActiveEvents = allSports.filter { sport =>
+      sport.events.count(_.active) >= threshold
+    }
+    sportsWithActiveEvents.foreach(printSport)
+  }
+
+
+
+
 
   def updateSportByName(): Unit = {
     println("Enter the current name of the sport you want to update:")
@@ -226,10 +329,211 @@ class CommandLineService(persistenceService:PersistenceService,
     }
   }
 
+  def updateEventByNameInSport(): Unit = {
+    println("Enter the name of the sport containing the event you want to update:")
+    val sportName = Name(scala.io.StdIn.readLine())
+
+    // Find the sport in the list by its name
+    val sportToUpdateOption: Option[Sport] = allSports.find(_.name == sportName)
+
+    sportToUpdateOption match {
+      case Some(sportToUpdate) =>
+        println(s"Enter the current name of the event you want to update:")
+        val currentEventName = Name(scala.io.StdIn.readLine())
+
+        // Find the event within the sport by its current name
+        val eventToUpdateOption: Option[Event] = sportToUpdate.events.find(_.name == currentEventName)
+
+        eventToUpdateOption match {
+          case Some(eventToUpdate) =>
+            println(s"Updating Event: ${eventToUpdate.name.value}")
+
+            // Get the new name from the user
+            println("Enter the new name:")
+            val newEventName = Name(scala.io.StdIn.readLine())
+
+            // Update the event's name
+            val updatedEvent = eventToUpdate.copy(name = newEventName)
+
+            // Update the sport's events list
+            val updatedSport = sportToUpdate.copy(events = sportToUpdate.events.map {
+              case event if event == eventToUpdate => updatedEvent
+              case otherEvent => otherEvent
+            })
+
+            // Update the allSports list
+            allSports = allSports.map {
+              case sport if sport == sportToUpdate => updatedSport
+              case otherSport => otherSport
+            }
+
+            println(s"Event updated. New name: ${updatedEvent.name.value}")
+
+          case None =>
+            println(s"No event found with the name: $currentEventName in the sport: ${sportToUpdate.name.value}")
+        }
+
+      case None =>
+        println(s"No sport found with the name: $sportName")
+    }
+  }
+
+  def updateMarketByNameInEvent(): Unit = {
+    println("Enter the name of the sport containing the event with the market you want to update:")
+    val sportName = Name(scala.io.StdIn.readLine())
+
+    // Find the sport in the list by its name
+    val sportToUpdateOption: Option[Sport] = allSports.find(_.name == sportName)
+
+    sportToUpdateOption match {
+      case Some(sportToUpdate) =>
+        println("Enter the name of the event containing the market you want to update:")
+        val eventName = Name(scala.io.StdIn.readLine())
+
+        // Find the event within the sport by its name
+        val eventToUpdateOption: Option[Event] = sportToUpdate.events.find(_.name == eventName)
+
+        eventToUpdateOption match {
+          case Some(eventToUpdate) =>
+            println("Enter the current name of the market you want to update:")
+            val currentMarketName = Name(scala.io.StdIn.readLine())
+
+            // Find the market within the event by its current name
+            val marketToUpdateOption: Option[Market] = eventToUpdate.markets.find(_.name == currentMarketName)
+
+            marketToUpdateOption match {
+              case Some(marketToUpdate) =>
+                println(s"Updating Market: ${marketToUpdate.name.value}")
+
+                // Get the new name from the user
+                println("Enter the new name:")
+                val newMarketName = Name(scala.io.StdIn.readLine())
+
+                // Update the market's name
+                val updatedMarket = marketToUpdate.copy(name = newMarketName)
+
+                // Update the event's markets list
+                val updatedEvent = eventToUpdate.copy(markets = eventToUpdate.markets.map {
+                  case market if market == marketToUpdate => updatedMarket
+                  case otherMarket => otherMarket
+                })
+
+                // Update the sport's events list
+                val updatedSport = sportToUpdate.copy(events = sportToUpdate.events.map {
+                  case event if event == eventToUpdate => updatedEvent
+                  case otherEvent => otherEvent
+                })
+
+                // Update the allSports list
+                allSports = allSports.map {
+                  case sport if sport == sportToUpdate => updatedSport
+                  case otherSport => otherSport
+                }
+
+                println(s"Market updated. New name: ${updatedMarket.name.value}")
+
+              case None =>
+                println(s"No market found with the name: $currentMarketName in the event: ${eventToUpdate.name.value}")
+            }
+
+          case None =>
+            println(s"No event found with the name: $eventName in the sport: ${sportToUpdate.name.value}")
+        }
+
+      case None =>
+        println(s"No sport found with the name: $sportName")
+    }
+  }
+  def updateSelectionByNameInMarket(): Unit = {
+    println("Enter the name of the sport containing the event with the market with the selection you want to update:")
+    val sportName = Name(scala.io.StdIn.readLine())
+
+    // Find the sport in the list by its name
+    val sportToUpdateOption: Option[Sport] = allSports.find(_.name == sportName)
+
+    sportToUpdateOption match {
+      case Some(sportToUpdate) =>
+        println("Enter the name of the event containing the market with the selection you want to update:")
+        val eventName = Name(scala.io.StdIn.readLine())
+
+        // Find the event within the sport by its name
+        val eventToUpdateOption: Option[Event] = sportToUpdate.events.find(_.name == eventName)
+
+        eventToUpdateOption match {
+          case Some(eventToUpdate) =>
+            println("Enter the name of the market containing the selection you want to update:")
+            val marketName = Name(scala.io.StdIn.readLine())
+
+            // Find the market within the event by its name
+            val marketToUpdateOption: Option[Market] = eventToUpdate.markets.find(_.name == marketName)
+
+            marketToUpdateOption match {
+              case Some(marketToUpdate) =>
+                println("Enter the current name of the selection you want to update:")
+                val currentSelectionName = Name(scala.io.StdIn.readLine())
+
+                // Find the selection within the market by its current name
+                val selectionToUpdateOption: Option[Selection] = marketToUpdate.selections.find(_.name == currentSelectionName)
+
+                selectionToUpdateOption match {
+                  case Some(selectionToUpdate) =>
+                    println(s"Updating Selection: ${selectionToUpdate.name.value}")
+
+                    // Get the new name from the user
+                    println("Enter the new name:")
+                    val newSelectionName = Name(scala.io.StdIn.readLine())
+
+                    // Update the selection's name
+                    val updatedSelection = selectionToUpdate.copy(name = newSelectionName)
+
+                    // Update the market's selections list
+                    val updatedMarket = marketToUpdate.copy(selections = marketToUpdate.selections.map {
+                      case selection if selection == selectionToUpdate => updatedSelection
+                      case otherSelection => otherSelection
+                    })
+
+                    // Update the event's markets list
+                    val updatedEvent = eventToUpdate.copy(markets = eventToUpdate.markets.map {
+                      case market if market == marketToUpdate => updatedMarket
+                      case otherMarket => otherMarket
+                    })
+
+                    // Update the sport's events list
+                    val updatedSport = sportToUpdate.copy(events = sportToUpdate.events.map {
+                      case event if event == eventToUpdate => updatedEvent
+                      case otherEvent => otherEvent
+                    })
+
+                    // Update the allSports list
+                    allSports = allSports.map {
+                      case sport if sport == sportToUpdate => updatedSport
+                      case otherSport => otherSport
+                    }
+
+                    println(s"Selection updated. New name: ${updatedSelection.name.value}")
+
+                  case None =>
+                    println(s"No selection found with the name: $currentSelectionName in the market: ${marketToUpdate.name.value}")
+                }
+
+              case None =>
+                println(s"No market found with the name: $marketName in the event: ${eventToUpdate.name.value}")
+            }
+
+          case None =>
+            println(s"No event found with the name: $eventName in the sport: ${sportToUpdate.name.value}")
+        }
+
+      case None =>
+        println(s"No sport found with the name: $sportName")
+    }
+  }
 
 
 
 
-  def fillWithSampleData () = allSports ++= createSampleData
+
+
+  def fillWithSampleData() = allSports ++= createSampleData
 }
 

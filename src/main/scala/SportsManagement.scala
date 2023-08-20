@@ -1,13 +1,11 @@
-import model.entities.{Event, EventStatus, EventType, Sport}
-import model.entities.ValueClasses.{DisplayName, Name, Order, Slug}
 import services.{CommandLineService, PersistenceService, SearchFilterService}
 
-object SportsManagement extends App{
-println("Starting SportsManagement App")
+object SportsManagement extends App {
+  println("Starting SportsManagement App")
 
   val persistenceService = new PersistenceService
   val searchFilterService = new SearchFilterService
-  val commandLineService = new CommandLineService(persistenceService,searchFilterService)
+  val commandLineService = new CommandLineService(persistenceService, searchFilterService)
 
 
   while (true) {
@@ -20,8 +18,16 @@ println("Starting SportsManagement App")
     println("6. Search Markets by name")
     println("7. Search Selections by name")
     println("8. Update Sport by name")
-    println("9. Delete Sports by name")
-    println("10. Exit")
+    println("9. Update Event by name")
+    println("10. Update Market by name")
+    println("11. Update Selections by name")
+    println("12. Delete Sports by name")
+    println("13. Delete Event by name")
+    println("14. Delete Market by name")
+    println("15. Delete Selections by name")
+    println("16. Find Sports with min active Events")
+
+    println("17. Exit")
     val choice = scala.io.StdIn.readLine()
 
     choice match {
@@ -33,8 +39,15 @@ println("Starting SportsManagement App")
       case "6" => commandLineService.searchMarketByName()
       case "7" => commandLineService.searchSelectionByName()
       case "8" => commandLineService.updateSportByName()
-      case "9" => commandLineService.deleteSportByName()
-      case "10" =>
+      case "9" => commandLineService.updateEventByNameInSport()
+      case "10" => commandLineService.updateMarketByNameInEvent()
+      case "11" => commandLineService.updateSelectionByNameInMarket()
+      case "12" => commandLineService.deleteSportByName()
+      case "13" => commandLineService.deleteEventByName()
+      case "14" => commandLineService.deleteMarketByName()
+      case "15" => commandLineService.deleteSelectionByName()
+      case "16" => commandLineService.findSportsWithMinActiveEvents()
+      case "17" =>
         persistenceService.safelySaveSports(commandLineService.allSports.toList)
         System.exit(0)
       case _ => println("Invalid choice")

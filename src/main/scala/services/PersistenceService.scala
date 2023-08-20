@@ -1,13 +1,12 @@
 package services
 
-import model.entities.{Event, EventStatus, EventType, Market, Selection, Sport}
-import model.entities.ValueClasses.{Columns, DisplayName, Name, Order, Outcome, Price, Schema, Slug}
+import model.entities.Sport
 import play.api.libs.json._
-import java.io._
-import java.io.{File, PrintWriter}
-import scala.io.Source
 
-class PersistenceService{
+import java.io.{File, PrintWriter}
+
+class PersistenceService {
+
   import model.entities.MyJsonFormats._
 
   val dataDir = new File("data")
@@ -15,6 +14,7 @@ class PersistenceService{
     dataDir.mkdirs()
   }
   val jsonFilePath = s"${dataDir.getAbsolutePath}/sports_data.json"
+
   def sportsToJson(sports: List[Sport]): JsValue = Json.toJson(sports)
 
   def saveSportsToFile(sports: List[Sport]): Unit = {
@@ -39,7 +39,6 @@ class PersistenceService{
       source.close()
     }
   }
-
 
 
   def safelySaveSports(sports: List[Sport]): Unit = {
