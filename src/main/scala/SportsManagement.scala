@@ -26,8 +26,9 @@ object SportsManagement extends App {
     println("14. Delete Market by name")
     println("15. Delete Selections by name")
     println("16. Find Sports with min active Events")
-
-    println("17. Exit")
+    println("17. Find Events with min active Markets")
+    println("18. Find Markets with min active Selections")
+    println("19. Exit")
     val choice = scala.io.StdIn.readLine()
 
     choice match {
@@ -47,7 +48,9 @@ object SportsManagement extends App {
       case "14" => commandLineService.deleteMarketByName()
       case "15" => commandLineService.deleteSelectionByName()
       case "16" => commandLineService.findSportsWithMinActiveEvents()
-      case "17" =>
+      case "17" => commandLineService.findEventsWithMinActiveMarkets()
+      case "18" => commandLineService.findMarketsWithMinActiveSelections()
+      case "19" =>
         persistenceService.safelySaveSports(commandLineService.allSports.toList)
         System.exit(0)
       case _ => println("Invalid choice")

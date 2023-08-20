@@ -295,7 +295,34 @@ class CommandLineService(persistenceService: PersistenceService,
   }
 
 
+  def findEventsWithMinActiveMarkets(): Unit = {
+    println("Enter the minimum number of active markets:")
+    val threshold = scala.io.StdIn.readInt()
 
+    allSports.foreach { sport =>
+      sport.events.foreach { event =>
+        val activeMarketsCount = event.markets.count(_.active)
+        if (activeMarketsCount >= threshold) {
+          println(s"Event '${event.name.value}' in sport '${sport.name.value}' has $activeMarketsCount active markets.")
+        }
+      }
+    }
+  }
+  def findMarketsWithMinActiveSelections(): Unit = {
+    println("Enter the minimum number of active selections:")
+    val threshold = scala.io.StdIn.readInt()
+
+    allSports.foreach { sport =>
+      sport.events.foreach { event =>
+        event.markets.foreach { market =>
+          val activeSelectionsCount = market.selections.count(_.active)
+          if (activeSelectionsCount >= threshold) {
+            println(s"Market '${market.name.value}' in event '${event.name.value}' of sport '${sport.name.value}' has $activeSelectionsCount active selections.")
+          }
+        }
+      }
+    }
+  }
 
 
   def updateSportByName(): Unit = {
